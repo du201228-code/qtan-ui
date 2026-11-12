@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f5f3">
+<title>Q弹 UI</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f6f5f3; --card:#eeedeb; --card-hi:#f9f8f6; --ink:#1d1d1f; --mute:#8b8a88;
+  --sh-d:rgba(160,155,148,.38); --sh-l:rgba(255,255,255,.95);
+  --red:#e9a19a; --yellow:#ecd28f; --green:#a9cf9f;
+  --r:30px;
+  --jp:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink)}
+body{font-family:var(--jp);-webkit-font-smoothing:antialiased;overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation}
+svg{display:block}
+.app{max-width:440px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 22px) calc(env(safe-area-inset-right) + 0px) calc(env(safe-area-inset-bottom) + 14px) calc(env(safe-area-inset-left) + 0px)}
+.top{text-align:center;padding:0 20px 6px}
+.logo{font-family:"ZCOOL KuaiLe","Snell Roundhand","Segoe Script","Comic Sans MS",cursive;font-weight:400;
+  font-size:42px;margin:0;letter-spacing:.02em;line-height:1.1;transform:rotate(-3deg)}
+.logo span{font-size:.55em;margin-left:.25em;vertical-align:.35em;opacity:.55}
+.sub{margin:6px 0 0;font-size:12px;color:var(--mute);letter-spacing:.08em}
+
+.pager{overflow:hidden;touch-action:pan-y;flex:0 0 auto;margin-top:14px}
+.track{display:flex;will-change:transform}
+.page{flex:0 0 100%;display:grid;grid-template-columns:1fr 1fr;gap:18px 16px;padding:8px 20px 4px}
+.item{display:flex;flex-direction:column;align-items:center;min-width:0}
+.card{width:100%;aspect-ratio:1/1;border-radius:var(--r);background:var(--card);
+  box-shadow:6px 6px 14px var(--sh-d),-6px -6px 14px var(--sh-l),inset 1px 1px 0 rgba(255,255,255,.7);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.card.col{flex-direction:column;gap:12px}
+.label{margin:11px 0 0;font-size:12px;font-weight:500;color:#4a4947;letter-spacing:.04em;white-space:nowrap}
+.row{display:flex;align-items:center}.gap{gap:12px}
+
+/* squircle buttons */
+.sq{width:56px;height:56px;border-radius:19px;display:grid;place-items:center;will-change:transform;
+  background:var(--card-hi);box-shadow:4px 4px 9px var(--sh-d),-4px -4px 9px var(--sh-l)}
+.sq svg{width:28px;height:28px;fill:none;stroke:var(--ink);stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.sq.dark{background:#232325;box-shadow:4px 4px 10px rgba(0,0,0,.25),-4px -4px 9px var(--sh-l)}
+.sq.dark svg{stroke:#f4f4f2}
+.io .arrow,.io .shaft{transform-box:fill-box}
+.count{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:30px;font-weight:600;line-height:1;will-change:transform;min-width:3ch;text-align:center}
+
+/* stick */
+.stick-track{width:72%;aspect-ratio:1;border-radius:50%;background:#e6e5e2;position:relative;touch-action:none;
+  box-shadow:inset 5px 5px 11px rgba(150,145,138,.45),inset -5px -5px 11px rgba(255,255,255,.95)}
+.stick-knob{position:absolute;left:50%;top:50%;width:46%;height:46%;margin:-23% 0 0 -23%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#4a4a4d,#1b1b1d 70%);will-change:transform;cursor:grab;
+  box-shadow:4px 6px 12px rgba(0,0,0,.3),inset 1px 1px 2px rgba(255,255,255,.18)}
+
+/* indicator */
+.indicator{width:100%;height:100%;display:flex;align-items:center;justify-content:center;touch-action:none;position:relative}
+.ind-window{position:relative;width:62%;height:56%;border-radius:18px;background:#e7e6e3;overflow:hidden;
+  box-shadow:inset 3px 3px 7px rgba(150,145,138,.4),inset -3px -3px 7px rgba(255,255,255,.9)}
+.ind-window span{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;display:grid;place-items:center;
+  font-family:var(--jp);font-weight:700;font-size:32px;will-change:transform,opacity}
+.ind-arrow{width:26px;height:40px;font-size:24px;color:var(--mute);line-height:1}
+.ind-arrow:active{color:var(--ink)}
+
+/* traffic lights */
+.lights{display:flex;gap:10px;position:relative}
+.light{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;will-change:transform;position:relative;
+  box-shadow:2px 3px 6px rgba(140,130,120,.35),inset 1px 1px 1px rgba(255,255,255,.5)}
+.light svg{width:18px;height:18px;stroke:rgba(60,40,30,.55);stroke-width:2.2;stroke-linecap:round;fill:none}
+.light .fill{fill:rgba(40,60,35,.5);stroke:none}
+.red{background:var(--red);z-index:1}.yellow{background:var(--yellow);z-index:2}.green{background:var(--green);z-index:3}
+
+/* tabs */
+.tabs-card{justify-content:flex-start;padding:16px 10px 0}
+.tabbar{display:flex;align-items:center;gap:4px;width:100%;height:30px;padding:3px;border-radius:13px;background:#e3e2df;
+  box-shadow:inset 2px 2px 5px rgba(150,145,138,.4),inset -2px -2px 5px rgba(255,255,255,.85)}
+.tabs{position:relative;flex:1;height:100%}
+.pill{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:10px;background:#fff;box-shadow:1px 2px 4px rgba(0,0,0,.1)}
+.tab{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;
+  font-size:10px;font-weight:500;color:var(--mute);white-space:nowrap;padding:0 3px;border-radius:10px}
+.tab.on{color:var(--ink)}
+.tab .t{overflow:hidden;text-overflow:clip;min-width:0}
+.tab .x{flex:0 0 14px;width:14px;height:14px;border-radius:50%;display:grid;place-items:center}
+.tab .x svg{width:10px;height:10px;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.tab-add{flex:0 0 24px;height:24px;border-radius:8px;display:grid;place-items:center;will-change:transform}
+.tab-add svg{width:16px;height:16px;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+.tab-add[disabled]{opacity:.3}
+.mock{width:100%;padding:12px 6px;display:flex;flex-direction:column;gap:8px}
+.mock i{display:block;height:8px;border-radius:4px;background:#e0dfdc}.mock i.s{width:60%}
+
+/* wheel */
+.wheel{position:relative;width:70%;height:84%;touch-action:none;cursor:ns-resize;
+  -webkit-mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent);mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent)}
+.wheel-band{position:absolute;left:0;right:0;top:50%;height:34px;margin-top:-17px;border-radius:12px;background:#f8f7f5;
+  box-shadow:2px 2px 6px var(--sh-d),-2px -2px 6px var(--sh-l)}
+.wheel-items{position:absolute;inset:0}
+.wheel-items span{position:absolute;left:0;right:0;top:50%;height:30px;margin-top:-15px;display:grid;place-items:center;
+  font-size:17px;font-weight:700;will-change:transform,opacity}
+
+/* radios */
+.radios{display:flex;flex-direction:column;gap:16px}
+.radio{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:500}
+.ring{width:28px;height:28px;border-radius:50%;background:#e5e4e1;display:grid;place-items:center;
+  box-shadow:inset 2px 2px 5px rgba(150,145,138,.45),inset -2px -2px 5px rgba(255,255,255,.95)}
+.ring .dot{width:14px;height:14px;border-radius:50%;background:var(--ink);transform:scale(0);will-change:transform}
+
+/* dots + footer */
+.dots{display:flex;justify-content:center;gap:8px;margin:20px 0 0}
+.dot-btn{width:8px;height:8px;border-radius:4px;background:#cfcdca;transition:width .35s cubic-bezier(.34,1.56,.64,1),background .25s}
+.dot-btn.on{width:22px;background:var(--ink)}
+.foot{margin-top:auto;padding:22px 20px 4px;text-align:center;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:10.5px;color:#a3a19e;letter-spacing:.02em}
+
+@media (min-width:700px){ .app{padding-top:48px} }
+@media (prefers-reduced-motion:reduce){ .dot-btn{transition:none} }
+:focus-visible{outline:2px solid #9a9893;outline-offset:3px}
+/* polish */
+.top{margin-top:auto}
+.dots{margin-bottom:auto}
+.tab:not(.on) .x{display:none}
+.tab .t{text-overflow:ellipsis}
+.light{width:38px;height:38px}
+.light svg{width:20px;height:20px}
+.tab{font-size:9.5px;padding:0 2px 0 4px;gap:1px}
+.tab .x{flex-basis:12px;width:12px;height:12px}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 class="logo">Q弹<span>UI</span></h1>
+    <p class="sub">弹性刚刚好的小组件</p>
+  </header>
+
+  <main class="pager" id="pager">
+    <div class="track" id="track">
+      <!-- page 1 -->
+      <section class="page" aria-label="第1页">
+        <div class="item">
+          <div class="card">
+            <div class="row gap">
+              <button class="sq io" data-kind="down" aria-label="下载" data-nodrag>
+                <svg viewBox="0 0 24 24"><g class="arrow"><path class="shaft" d="M12 3.5V13"/><path class="head" d="M8 9.5l4 4 4-4"/></g><path class="tray" d="M4.5 14.5V18Q12 18 19.5 18V14.5"/></svg>
+              </button>
+              <button class="sq io" data-kind="up" aria-label="上传" data-nodrag>
+                <svg viewBox="0 0 24 24"><g class="arrow"><path class="shaft" d="M12 14V4.5"/><path class="head" d="M8 8l4-4 4 4"/></g><path class="tray" d="M4.5 14.5V18Q12 18 19.5 18V14.5"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="label">下载・上传</p>
+        </div>
+
+        <div class="item">
+          <div class="card">
+            <div class="stick-track" id="stick" data-nodrag>
+              <div class="stick-knob" id="knob"></div>
+            </div>
+          </div>
+          <p class="label">摇杆</p>
+        </div>
+
+        <div class="item">
+          <div class="card">
+            <div class="indicator" id="indicator" data-nodrag>
+              <button class="ind-arrow l" aria-label="上一个">‹</button>
+              <div class="ind-window" id="indWin"></div>
+              <button class="ind-arrow r" aria-label="下一个">›</button>
+            </div>
+          </div>
+          <p class="label">指示器</p>
+        </div>
+
+        <div class="item">
+          <div class="card col">
+            <div class="count" id="count">0</div>
+            <div class="row gap">
+              <button class="sq dark" id="minus" aria-label="减" data-nodrag><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
+              <button class="sq dark" id="plus" aria-label="加" data-nodrag><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>
+            </div>
+          </div>
+          <p class="label">按钮</p>
+        </div>
+      </section>
+
+      <!-- page 2 -->
+      <section class="page" aria-label="第2页">
+        <div class="item">
+          <div class="card">
+            <div class="lights" id="lights" data-nodrag>
+              <button class="light red" aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg></button>
+              <button class="light yellow" aria-label="最小化"><svg viewBox="0 0 24 24"><path d="M7 12h10"/></svg></button>
+              <button class="light green" aria-label="展開"><svg viewBox="0 0 24 24"><path d="M9 7h8v8z M15 17H7V9z" class="fill"/></svg></button>
+            </div>
+          </div>
+          <p class="label">红绿灯按钮</p>
+        </div>
+
+        <div class="item">
+          <div class="card col tabs-card">
+            <div class="tabbar" id="tabbar" data-nodrag>
+              <div class="tabs" id="tabs"><div class="pill" id="pill"></div></div>
+              <button class="tab-add" id="tabAdd" aria-label="新建标签"><svg viewBox="0 0 24 24"><path d="M7 12h10M12 7v10"/></svg></button>
+            </div>
+            <div class="mock"><i></i><i></i><i class="s"></i></div>
+          </div>
+          <p class="label">标签页</p>
+        </div>
+
+        <div class="item">
+          <div class="card">
+            <div class="wheel" id="wheel" data-nodrag>
+              <div class="wheel-band"></div>
+              <div class="wheel-items" id="wheelItems"></div>
+            </div>
+          </div>
+          <p class="label">日期选择</p>
+        </div>
+
+        <div class="item">
+          <div class="card">
+            <div class="radios" id="radios" role="radiogroup">
+              <button class="radio" role="radio" aria-checked="true" data-nodrag><span class="ring"><span class="dot"></span></span><span>选项</span></button>
+              <button class="radio" role="radio" aria-checked="false" data-nodrag><span class="ring"><span class="dot"></span></span><span>选项</span></button>
+            </div>
+          </div>
+          <p class="label">单选按钮</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="dots" id="dots" aria-label="页面">
+    <button class="dot-btn on" aria-label="第1页"></button>
+    <button class="dot-btn" aria-label="第2页"></button>
+  </nav>
+
+  <footer class="foot">spring(m=1, k=320, c=18) · qtan-ui · 2026</footer>
+</div>
+<script>
+/* Tiny damped-spring solver: m·x'' = -k(x - target) - c·x'  (semi-implicit Euler, fixed substeps) */
+(function () {
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const active = new Set();
+  const dirty = new Set();
+  let raf = 0, last = 0;
+
+  class Spring {
+    constructor(value = 0, opts = {}) {
+      this.value = value; this.target = value; this.velocity = 0;
+      this.m = opts.mass ?? 1; this.k = opts.stiffness ?? 320; this.c = opts.damping ?? 18;
+      this.eps = opts.precision ?? 0.001;
+      this.onUpdate = opts.onUpdate || null;
+      if (reduce) this.c = Math.max(this.c, 2 * Math.sqrt(this.k * this.m)); // critically damped: no wobble
+    }
+    set(opts) { Object.assign(this, opts); if (reduce) this.c = Math.max(this.c, 2 * Math.sqrt(this.k * this.m)); return this; }
+    to(target, velocity) { this.target = target; if (velocity !== undefined) this.velocity = velocity; wake(this); return this; }
+    jump(v) { this.value = this.target = v; this.velocity = 0; active.delete(this); this.onUpdate && dirty.add(this.onUpdate); kick(); return this; }
+    kick(v) { this.velocity += v; wake(this); return this; }
+    step(dt) {
+      const h = 1 / 240; let t = dt;
+      while (t > 1e-6) {
+        const s = Math.min(h, t); t -= s;
+        const a = (-this.k * (this.value - this.target) - this.c * this.velocity) / this.m;
+        this.velocity += a * s; this.value += this.velocity * s;
+      }
+      if (Math.abs(this.velocity) < this.eps * 10 && Math.abs(this.value - this.target) < this.eps) {
+        this.value = this.target; this.velocity = 0; return true;
+      }
+      return false;
+    }
+  }
+  function wake(s) { active.add(s); kick(); }
+  function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); } }
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    for (const s of active) { if (s.step(dt)) active.delete(s); if (s.onUpdate) dirty.add(s.onUpdate); }
+    for (const fn of dirty) fn(); dirty.clear();
+    raf = (active.size) ? requestAnimationFrame(loop) : 0;
+  }
+  window.Spring = Spring;
+  window.springReduced = reduce;
+  window.springRender = (fn) => { dirty.add(fn); kick(); };
+})();
+
+</script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const haptic = () => { try { navigator.vibrate && navigator.vibrate(5); } catch (e) {} };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const mod = (n, m) => ((n % m) + m) % m;
+
+/* velocity tracker for drags */
+function tracker() {
+  let pts = [];
+  return {
+    reset() { pts = []; },
+    add(x, y) { const t = performance.now(); pts.push({ x, y, t }); while (pts.length > 2 && t - pts[0].t > 100) pts.shift(); },
+    v() { if (pts.length < 2) return { x: 0, y: 0 }; const a = pts[0], b = pts[pts.length - 1]; const dt = Math.max(1, b.t - a.t) / 1000; return { x: (b.x - a.x) / dt, y: (b.y - a.y) / dt }; }
+  };
+}
+
+/* generic press-scale behaviour: press -> shrink, release -> pop over 100% */
+function pressable(el, { down = 0.88, onPress, onRelease, render } = {}) {
+  const s = new Spring(1, { stiffness: 520, damping: 14 });
+  s.onUpdate = () => { render ? render(s.value) : (el.style.transform = `scale(${s.value})`); };
+  el.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    el.setPointerCapture && el.setPointerCapture(e.pointerId);
+    s.set({ stiffness: 700, damping: 30 }).to(down); haptic(); onPress && onPress(e);
+  });
+  const up = e => { if (s.target === 1) return; s.set({ stiffness: 520, damping: 11 }).to(1, 3.5); onRelease && onRelease(e); };
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  return s;
+}
+
+/* ---------- Pager ---------- */
+const pager = $('#pager'), track = $('#track'), dots = $$('.dot-btn');
+let page = 0; const PAGES = 2;
+const px = new Spring(0, { stiffness: 210, damping: 24 });
+px.onUpdate = () => { track.style.transform = `translate3d(${px.value}px,0,0)`; };
+function goPage(i, v) {
+  page = clamp(i, 0, PAGES - 1);
+  px.to(-page * pager.clientWidth, v);
+  dots.forEach((d, k) => d.classList.toggle('on', k === page));
+}
+dots.forEach((d, i) => d.addEventListener('click', () => goPage(i)));
+addEventListener('resize', () => px.jump(-page * pager.clientWidth));
+addEventListener('keydown', e => { if (e.key === 'ArrowRight') goPage(page + 1); if (e.key === 'ArrowLeft') goPage(page - 1); });
+{
+  let start = null, dragging = false; const tr = tracker();
+  pager.addEventListener('pointerdown', e => {
+    if (e.target.closest('[data-nodrag]')) return;
+    start = { x: e.clientX, y: e.clientY, base: px.value, id: e.pointerId }; dragging = false; tr.reset(); tr.add(e.clientX, 0);
+  });
+  pager.addEventListener('pointermove', e => {
+    if (!start || e.pointerId !== start.id) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y;
+    if (!dragging) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) { dragging = true; pager.setPointerCapture(e.pointerId); }
+      else if (Math.abs(dy) > 10) { start = null; return; } else return;
+    }
+    tr.add(e.clientX, 0);
+    let x = start.base + dx; const min = -(PAGES - 1) * pager.clientWidth;
+    if (x > 0) x = x * 0.35; else if (x < min) x = min + (x - min) * 0.35;  // rubber band
+    px.jump(x);
+  });
+  const end = e => {
+    if (!start) return; const was = dragging; start = null; dragging = false;
+    if (!was) return;
+    const v = tr.v().x, w = pager.clientWidth, cur = -px.value / w;
+    let tgt = Math.round(cur);
+    if (v < -350) tgt = Math.ceil(cur); else if (v > 350) tgt = Math.floor(cur);
+    goPage(tgt, v);
+  };
+  pager.addEventListener('pointerup', end); pager.addEventListener('pointercancel', end);
+}
+
+/* ---------- 1. Download / Upload ---------- */
+$$('.io').forEach(btn => {
+  const kind = btn.dataset.kind;
+  const arrow = $('.arrow', btn), shaft = $('.shaft', btn), tray = $('.tray', btn);
+  shaft.style.transformOrigin = kind === 'down' ? '50% 100%' : '50% 0%';
+  arrow.style.transformOrigin = '50% 100%';
+  const p = new Spring(0, { stiffness: 600, damping: 26 }); // 0 = rest, 1 = pressed
+  p.onUpdate = () => {
+    const v = p.value;
+    const squash = clamp(1 - 0.32 * v, 0.55, 1.35);
+    shaft.style.transform = `scaleY(${squash})`;
+    // pressed: arrow pushed into tray; negative (overshoot): shoots up
+    arrow.style.transform = `translateY(${v * 2.2 - (v < 0 ? -v * 3 : 0)}px)`;
+    const bow = 18 + v * 4.5;
+    tray.setAttribute('d', `M4.5 ${14.5 + v * .6}V18Q12 ${bow} 19.5 18V${14.5 + v * .6}`);
+    btn.style.transform = `scale(${1 - 0.05 * v})`;
+  };
+  btn.addEventListener('pointerdown', e => { if (e.button > 0) return; btn.setPointerCapture(e.pointerId); p.set({ stiffness: 600, damping: 26 }).to(1); haptic(); });
+  const up = () => { if (p.target === 0) return; p.set({ stiffness: 380, damping: 9 }).to(0, -14); };
+  btn.addEventListener('pointerup', up); btn.addEventListener('pointercancel', up);
+});
+
+/* ---------- 2. Analog stick ---------- */
+{
+  const trackEl = $('#stick'), knob = $('#knob');
+  const sx = new Spring(0, { stiffness: 340, damping: 7 }), sy = new Spring(0, { stiffness: 340, damping: 7 });
+  const render = () => { knob.style.transform = `translate3d(${sx.value}px,${sy.value}px,0)`; };
+  sx.onUpdate = sy.onUpdate = render;
+  let st = null;
+  trackEl.addEventListener('pointerdown', e => {
+    trackEl.setPointerCapture(e.pointerId);
+    const r = trackEl.getBoundingClientRect();
+    st = { cx: r.left + r.width / 2, cy: r.top + r.height / 2, R: (r.width - knob.offsetWidth) / 2 + 2 };
+    haptic(); move(e);
+  });
+  const move = e => {
+    if (!st) return;
+    let dx = e.clientX - st.cx, dy = e.clientY - st.cy; const d = Math.hypot(dx, dy);
+    if (d > st.R) { // soft limit beyond radius
+      const over = d - st.R, k = (st.R + over * 0.15) / d; dx *= k; dy *= k;
+    }
+    sx.jump(dx); sy.jump(dy);
+  };
+  trackEl.addEventListener('pointermove', move);
+  const up = () => { if (!st) return; st = null; sx.to(0); sy.to(0); };
+  trackEl.addEventListener('pointerup', up); trackEl.addEventListener('pointercancel', up);
+}
+
+/* ---------- 3. Indicator (letter carousel) ---------- */
+{
+  const win = $('#indWin'), root = $('#indicator');
+  const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const N = 7, spans = [];
+  for (let i = 0; i < N; i++) { const s = document.createElement('span'); win.appendChild(s); spans.push(s); }
+  const pos = new Spring(0, { stiffness: 260, damping: 13 });
+  const SP = 44;
+  pos.onUpdate = () => {
+    const base = Math.round(pos.value);
+    spans.forEach((s, j) => {
+      const i = base + j - 3, d = i - pos.value, ad = Math.abs(d);
+      s.textContent = L[mod(i, L.length)];
+      const sc = 1 - Math.min(ad, 1.6) * 0.38;
+      s.style.transform = `translate3d(${d * SP}px,0,0) scale(${sc})`;
+      s.style.opacity = String(clamp(1 - ad * 0.45, 0, 1));
+    });
+  };
+  springRender(pos.onUpdate);
+  const go = dir => { pos.to(Math.round(pos.target) + dir); haptic(); };
+  $('.ind-arrow.l', root).addEventListener('click', () => go(-1));
+  $('.ind-arrow.r', root).addEventListener('click', () => go(1));
+  let st = null; const tr = tracker();
+  win.addEventListener('pointerdown', e => { win.setPointerCapture(e.pointerId); st = { x: e.clientX, p: pos.value, moved: false }; tr.reset(); tr.add(e.clientX, 0); });
+  win.addEventListener('pointermove', e => {
+    if (!st) return; const dx = e.clientX - st.x; if (Math.abs(dx) > 4) st.moved = true;
+    tr.add(e.clientX, 0); pos.jump(st.p - dx / SP);
+  });
+  const up = e => {
+    if (!st) return; const moved = st.moved; st = null;
+    if (!moved) { const r = win.getBoundingClientRect(); return go(e.clientX < r.left + r.width / 2 ? -1 : 1); }
+    const v = -tr.v().x / SP; const tgt = Math.round(pos.value + clamp(v * 0.12, -3, 3));
+    if (tgt !== Math.round(pos.value)) haptic();
+    pos.to(tgt, v);
+  };
+  win.addEventListener('pointerup', up); win.addEventListener('pointercancel', up);
+}
+
+/* ---------- 4. Counter buttons ---------- */
+{
+  const count = $('#count'); let n = 0;
+  const bounce = new Spring(1, { stiffness: 600, damping: 12 });
+  const lift = new Spring(0, { stiffness: 500, damping: 14 });
+  const r = () => { count.style.transform = `translateY(${lift.value}px) scale(${bounce.value})`; };
+  bounce.onUpdate = lift.onUpdate = r;
+  const change = d => { n = clamp(n + d, -99, 99); count.textContent = n; bounce.jump(0.7).to(1, 6); lift.jump(d > 0 ? 8 : -8).to(0); };
+  pressable($('#minus'), { onRelease: () => change(-1) });
+  pressable($('#plus'), { onRelease: () => change(1) });
+}
+
+/* ---------- 5. Traffic lights ---------- */
+{
+  const root = $('#lights'), red = $('.red', root), yel = $('.yellow', root), grn = $('.green', root);
+  const c = new Spring(0, { stiffness: 300, damping: 16 }); let collapsed = false;
+  c.onUpdate = () => {
+    const v = c.value, step = red.offsetWidth + 10;
+    red.style.transform = `translateX(${v * step * 2}px) scale(${1 - 0.12 * clamp(v, 0, 1)})`;
+    yel.style.transform = `translateX(${v * step}px) scale(${1 - 0.06 * clamp(v, 0, 1)})`;
+    root.style.transform = `translateX(${-v * step}px)`; // keep the group centred
+  };
+  const gp = pressable(grn, { down: 0.85, onRelease: () => {
+    collapsed = !collapsed;
+    if (collapsed) c.set({ stiffness: 340, damping: 22 }).to(1);
+    else c.set({ stiffness: 260, damping: 9 }).to(0, -4); // rubber-band out
+  } });
+  pressable(red, { down: 0.85 }); pressable(yel, { down: 0.85 });
+}
+
+/* ---------- 6. Tabs ---------- */
+{
+  const tabsEl = $('#tabs'), pill = $('#pill'), add = $('#tabAdd');
+  const MAX = 3, GAP = 3;
+  let tabs = [], active = null, uid = 0;
+  const px_ = new Spring(0, { stiffness: 380, damping: 22 }), pw = new Spring(0, { stiffness: 380, damping: 22 });
+  const xIcon = '<svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+  function layout() {
+    const W = tabsEl.clientWidth; const total = tabs.reduce((s, t) => s + Math.max(0, t.f.value), 0);
+    const denom = Math.max(1, total); let x = 0;
+    const geo = new Map();
+    tabs.forEach(t => {
+      const f = Math.max(0, t.f.value), w = Math.max(0, (W - GAP * (tabs.length - 1)) * f / denom);
+      t.el.style.left = x + 'px'; t.el.style.width = w + 'px'; t.el.style.opacity = String(clamp(f * 1.5, 0, 1));
+      geo.set(t, { x, w }); x += w + GAP * clamp(f, 0, 1);
+    });
+    if (active && geo.has(active)) { const g = geo.get(active); px_.to(g.x); pw.to(g.w); }
+    pill.style.transform = `translateX(${px_.value}px)`; pill.style.width = Math.max(0, pw.value) + 'px';
+    add.disabled = tabs.filter(t => !t.closing).length >= MAX;
+  }
+  px_.onUpdate = pw.onUpdate = layout;
+  function setActive(t) { active = t; tabs.forEach(o => o.el.classList.toggle('on', o === t)); springRender(layout); }
+  function addTab(label, instant) {
+    if (tabs.filter(t => !t.closing).length >= MAX) return;
+    const el = document.createElement('div'); el.className = 'tab';
+    el.innerHTML = `<span class="t">${label}</span><button class="x" aria-label="关闭">${xIcon}</button>`;
+    tabsEl.appendChild(el);
+    const t = { el, id: ++uid, closing: false, f: new Spring(instant ? 1 : 0, { stiffness: 320, damping: 15 }) };
+    t.f.onUpdate = layout; tabs.push(t);
+    el.addEventListener('pointerdown', e => { if (!e.target.closest('.x')) { setActive(t); haptic(); } });
+    $('.x', el).addEventListener('click', e => { e.stopPropagation(); closeTab(t); });
+    if (!instant) t.f.to(1);
+    setActive(t);
+  }
+  function closeTab(t) {
+    if (t.closing) return; t.closing = true; haptic();
+    const live = tabs.filter(o => !o.closing);
+    if (active === t) setActive(live[live.length - 1] || null);
+    if (!live.length) { pw.to(0); }
+    t.f.set({ stiffness: 420, damping: 24 }).to(0);
+    const prev = t.f.onUpdate;
+    t.f.onUpdate = () => { prev(); if (t.f.value <= 0.001 && t.f.target === 0) { tabs = tabs.filter(o => o !== t); t.el.remove(); layout(); } };
+  }
+  pressable(add, { down: 0.8, onRelease: () => addTab('标题') });
+  addTab('标题', true);
+  pw.jump(tabsEl.clientWidth);
+  window.__tabs = () => tabs.length;
+}
+
+/* ---------- 7. Date wheel ---------- */
+{
+  const wheel = $('#wheel'), items = $('#wheelItems');
+  const days = Array.from({ length: 31 }, (_, i) => i + 1), H = 30;
+  const els = days.map(d => { const s = document.createElement('span'); s.textContent = d + '日'; items.appendChild(s); return s; });
+  const pos = new Spring(23, { stiffness: 300, damping: 17 });  // index -> 24日
+  pos.onUpdate = () => {
+    els.forEach((s, i) => {
+      const d = i - pos.value, ad = Math.abs(d);
+      if (ad > 4) { s.style.opacity = '0'; return; }
+      s.style.transform = `translate3d(0,${d * H}px,0) scale(${1 - Math.min(ad, 3) * 0.08})`;
+      s.style.opacity = String(clamp(1 - ad * 0.32, 0, 1));
+    });
+  };
+  springRender(pos.onUpdate);
+  const snap = (v = 0) => { const t = clamp(Math.round(pos.value + clamp(v * 0.15, -6, 6)), 0, days.length - 1); if (t !== Math.round(pos.target)) haptic(); pos.to(t, v); };
+  let st = null; const tr = tracker();
+  wheel.addEventListener('pointerdown', e => { wheel.setPointerCapture(e.pointerId); st = { y: e.clientY, p: pos.value, moved: false }; tr.reset(); tr.add(0, e.clientY); });
+  wheel.addEventListener('pointermove', e => {
+    if (!st) return; const dy = e.clientY - st.y; if (Math.abs(dy) > 3) st.moved = true; tr.add(0, e.clientY);
+    let p = st.p - dy / H; const max = days.length - 1;
+    if (p < 0) p = p * 0.35; else if (p > max) p = max + (p - max) * 0.35;
+    pos.jump(p);
+  });
+  const up = e => {
+    if (!st) return; const moved = st.moved; st = null;
+    if (!moved) { const r = wheel.getBoundingClientRect(); const off = Math.round((e.clientY - (r.top + r.height / 2)) / H); pos.to(clamp(Math.round(pos.value) + off, 0, days.length - 1)); haptic(); return; }
+    snap(-tr.v().y / H);
+  };
+  wheel.addEventListener('pointerup', up); wheel.addEventListener('pointercancel', up);
+  let wt; wheel.addEventListener('wheel', e => { e.preventDefault(); pos.jump(clamp(pos.value + e.deltaY / H / 2, -0.4, days.length - 0.6)); clearTimeout(wt); wt = setTimeout(() => snap(0), 90); }, { passive: false });
+  window.__wheel = () => days[Math.round(pos.target)];
+}
+
+/* ---------- 8. Radio ---------- */
+{
+  const radios = $$('.radio');
+  const fills = radios.map((r, i) => {
+    const dot = $('.dot', r), s = new Spring(i === 0 ? 1 : 0, { stiffness: 480, damping: 11 });
+    s.onUpdate = () => { dot.style.transform = `scale(${Math.max(0, s.value)})`; };
+    springRender(s.onUpdate); return s;
+  });
+  radios.forEach((r, i) => r.addEventListener('click', () => {
+    if (r.getAttribute('aria-checked') === 'true') { fills[i].kick(-4); return; }
+    radios.forEach((o, j) => {
+      const on = j === i; o.setAttribute('aria-checked', on);
+      if (on) fills[j].set({ stiffness: 480, damping: 10 }).to(1, 2); else fills[j].set({ stiffness: 600, damping: 40 }).to(0);
+    });
+    haptic();
+  }));
+}
+
+/* initial layout */
+goPage(0); px.jump(0);
+})();
+
+</script>
+</body>
+</html>
